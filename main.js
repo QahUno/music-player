@@ -30,8 +30,6 @@ nằm ngoài vùng nhìn thấy được của trình duyệt để giảm số 
 kỹ thuật này đáp ứng đc cả danh sách hàng triệu luôn nhé.
 */
 
-
-
 // so sanh code, extract to notion, dc cmt + ss tiep, cmt yt
 
 const $ = document.querySelector.bind(document)
@@ -58,7 +56,7 @@ const App = {
   defineProperties() {
     Object.defineProperty(this, 'config', {
       get() {
-        return JSON.parse(localStorage.getItem(MUSICPLAYER_STORAGE_KEY))
+        return JSON.parse(localStorage.getItem(MUSICPLAYER_STORAGE_KEY)) || {}
       }
     })
 
@@ -160,13 +158,13 @@ const App = {
   },
 
   loadConfig() {
-    if (this.config) {
+    // if (this.config) {
       Object.assign(this, this.config)
-    }
+    // }
   },
 
   setConfig(key, value) {
-    const newConfig = this.config || {}
+    const newConfig = this.config
     newConfig[key] = value
     localStorage.setItem(MUSICPLAYER_STORAGE_KEY, JSON.stringify(newConfig))
   },
