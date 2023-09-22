@@ -186,3 +186,11 @@ header h2 {
   color: #999;
   font-size: 18px;
 }
+
+.volume-bar {
+  display: flex;
+}
+
+#volume-icon.muted {
+  color: red
+}

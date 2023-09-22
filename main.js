@@ -1,18 +1,3 @@
-// renderPlaylist --> done
-// scroll to shrink disk --> done
-// play / pause / seek --> done
-// quay dia --> done
-// next, prev --> done
-// random --> done
-// xu ly tranh lap lai trg random --> done
-// next when ended --> done
-// replay when ended --> done
-// active current song --> done
-// scroll into view --> done
-// click chon playlist --> done
-// save repeat/random btn when refresh --> done
-// local store current song + timestamp--> done
-// smart keystroke (ex spacebar = pause) --> done
 // css giao dien (fix cd when scroll, background động), timestamp on progressbar
 // chia module
 // tu dong load nhac tu local computer, dat ten cac kieu
@@ -29,8 +14,6 @@ Load more là kéo tới đâu tải thêm tới đấy, virtual scroll là kỹ
 nằm ngoài vùng nhìn thấy được của trình duyệt để giảm số lượng elements trong DOM, 
 kỹ thuật này đáp ứng đc cả danh sách hàng triệu luôn nhé.
 */
-
-// so sanh code, extract to notion, dc cmt + ss tiep, cmt yt
 
 const $ = document.querySelector.bind(document)
 const $$ = document.querySelectorAll.bind(document)
@@ -50,7 +33,8 @@ const nextBtn = $('.btn.btn-next')
 const prevBtn = $('.btn.btn-prev')
 const randomBtn = $('.btn.btn-random')
 const repeatBtn = $('.btn.btn-repeat')
-
+const volumeSlider = $('#volume-slider')
+const volumeIcon = $('#volume-icon')
 
 const App = {
   defineProperties() {
@@ -136,6 +120,11 @@ const App = {
       }
     })
 
+    Object.defineProperty(this, 'isMuted', {
+      value: false,
+      writable: true
+    })
+
     Object.defineProperty(this, 'isPlaying', {
       value: false,
       writable: true
@@ -159,7 +148,7 @@ const App = {
 
   loadConfig() {
     // if (this.config) {
-      Object.assign(this, this.config)
+    Object.assign(this, this.config)
     // }
   },
 
@@ -245,6 +234,24 @@ const App = {
   handleEvents() {
     const _this = this
 
+    // tang giam volume, mute
+    volumeSlider.oninput = function () {
+      if (!_this.isMuted) {
+        audio.volume = this.value
+      }
+    }
+
+    volumeIcon.onclick = function () {
+      if (_this.isMuted) {
+        audio.volume = volumeSlider.value
+      }
+      else {
+        audio.volume = 0
+      }
+      _this.isMuted = !_this.isMuted
+      volumeIcon.classList.toggle('muted', _this.isMuted) 
+    }
+
     // smart keystroke control (need updated!)
     onkeydown = function (e) {
       e.preventDefault()
@@ -263,10 +270,14 @@ const App = {
       }
     }
 
-    // save current song + timestamp
+    // save config before exit/refresh
     onbeforeunload = function () {
       _this.setConfig('currentIndex', _this.currentIndex)
       _this.setConfig('currentSongTimestamp', audio.currentTime)
+      _this.setConfig('volume', volumeSlider.value)
+      _this.setConfig('isMuted', _this.isMuted)
+      _this.setConfig('isRepeat', _this.isRepeat)
+      _this.setConfig('isRandom', _this.isRandom)
     }
 
     // choose song on playlist
@@ -284,11 +295,10 @@ const App = {
       }
     }
 
-    // xu ly repear btn
+    // xu ly repeat btn
     repeatBtn.onclick = function () {
       _this.isRepeat = !_this.isRepeat
       repeatBtn.classList.toggle('active', _this.isRepeat)
-      _this.setConfig('isRepeat', _this.isRepeat)
     }
 
     // auto play next song when ended
@@ -305,7 +315,6 @@ const App = {
     randomBtn.onclick = function () {
       _this.isRandom = !_this.isRandom
       randomBtn.classList.toggle('active', _this.isRandom)
-      _this.setConfig('isRandom', _this.isRandom)
     }
 
     // xu ly next, prev btn
@@ -379,8 +388,13 @@ const App = {
 
   renderFromConfig() {
     audio.currentTime = this.config.currentSongTimestamp || 0
+    volumeSlider.value = this.config.volume || 0
+    if (this.config.isMuted) {
+      audio.volume = 0
+    }
     repeatBtn.classList.toggle('active', this.isRepeat)
     randomBtn.classList.toggle('active', this.isRandom)
+    volumeIcon.classList.toggle('muted', this.isMuted)
   },
 
   start() {
@@ -394,73 +408,3 @@ const App = {
 }
 
 App.start()
-
-
-
-/*
-5. Thêm chức năng điều chỉnh âm lượng, lưu vị trí âm lượng người dùng đã chọn. Mặc định 100%
-
-<!--Adjust Volume -->
-      <div class="container">
-        <div class="btn btn-down-volume">
-          <i class="fa-solid fa-subtract"></i>
-        </div>
-
-        <div class="btn btn-volume">
-          <i class="fa-solid fa-volume-high "></i>
-        </div>
-        <div class="btn btn-up-volume">
-          <i class="fa-solid fa-plus"></i>
-        </div>
-
-      </div>
-
-      <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="0">
-      <!-- <span class="volume-value">50%</span> -->
-Thêm các icon
-const app = {
-        currentIndex: 0,
-        isPlaying: false,
-        isRandom: false,
-        isRepeat: false,
-        playedIndexes: [],
-        currentVolume: 0,
-Thêm biến currentVolume để lưu âm lượng hiện tại
-// Xử lý tăng giảm âm lượng
-          upVolumeBtn.onclick = function () {
-            console.log(audio.volume)
-            if (audio.volume < 1.0) {
-              
-              audio.volume = parseFloat((audio.volume + 0.1).toFixed(1));
-              volumeSlider.value = audio.volume;
-              console.log(volumeSlider)
-              _this.setConfig('currentVolume', volumeSlider.value)
-            }
-          }
-
-          downVolumeBtn.onclick = function () {
-            console.log(audio.volume)
-            if (audio.volume > 0.0) {
-              audio.volume = parseFloat((audio.volume - 0.1).toFixed(1));
-              volumeSlider.value = audio.volume;
-              console.log(volumeSlider)
-              _this.setConfig('currentVolume', volumeSlider.value)
-            }
-          }
-
-          // Cập nhật giá trị volume slider khi giá trị volume bị thay đổi
-          audio.onvolumechange = function () {
-            volumeSlider.value = audio.volume;
-          }
-
-thêm 2 dong ở hàm loadConfig
-loadConfig: function () {
-          this.isRandom = this.config.isRandom
-          this.isRepeat = this.config.isRepeat
-          this.currentIndex = this.config.currentIndex
-          this.playedIndexes.push(this.config.currentIndex)
-          volumeSlider.value = this.config.currentVolume
-          audio.volume = this.config.currentVolume
-          //Object.assign(this, this.config)
-        },
-*/
